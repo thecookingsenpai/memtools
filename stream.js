@@ -57,6 +57,7 @@ var init = function () {
         if(tx.from.toLowerCase()==args[1].toLowerCase() || tx.to.toLowerCase()==args[1].toLowerCase()) {
           fs.writeFileSync('tracking/' + args[1], JSON.stringify(tx) + "\n==================\n", { flag: 'a+' });
           console.log(tx);
+          console.log(web3.toAscii(tx.input));
 		    }
 		}
 		
