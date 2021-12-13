@@ -54,7 +54,7 @@ var init = function () {
 			}
       // This allows to track wallets
 		} else if(operation=="follow") {
-        if(tx.from==args[1]) {
+        if(tx.from==args[1] || tx.to==args[1]) {
           fs.writeFileSync('tracking/' + args[1], tx + "\n==================\n");
           console.log(tx);
 		    }
