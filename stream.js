@@ -52,20 +52,29 @@ var init = function () {
                 		console.log(tx.type);
 	           		Object.keys(tx).forEach((prop)=> console.log(prop));	
 			}
-      // This allows to track wallets
+
+      //////////////////////////////////// WALLET TRACKING ////////////////////////////////////
+      
 		} else if(operation=="follow") {
         if(tx.from.toLowerCase()==args[1].toLowerCase() || tx.to.toLowerCase()==args[1].toLowerCase()) {
-          fs.writeFileSync('tracking/' + args[1], JSON.stringify(tx) + "\n==================\n", { flag: 'a+' });
-          console.log(tx.hash);
+          log_tx(JSON.stringify(tx) + "\n==================\n", tx, args[1]);
+
           // Operation logging for given wallet
+
           if(data.includes("60806040")) {
-            fs.writeFileSync('tracking/' + args[1],"Deployment TX!", { flag: 'a+' });
-            console.log("deployment!");
-          } // fallback
+            log_tx("deployment", tx, args[1]);
+          } 
+          
+          else if (data.includes("0x18cbafe5")) {
+            log_tx("swapExactTokensForEth", tx, args[1]);
+          }
+          
+          // fallback
           else {
             fs.writeFileSync('tracking/' + args[1],"Unknown tx", { flag: 'a+' });
             console.log("Unknown tx");
           }
+          
 		    }
 		}
 		
@@ -78,6 +87,10 @@ var init = function () {
   });
 };
 
+function log_tx(str, tx, addy) {
+  fs.writeFileSync('tracking/' + addy,str, { flag: 'a+' });
+  console.log(str);
+}
 
 function print(str) {
 	console.log(str);
