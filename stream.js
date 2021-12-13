@@ -1,3 +1,4 @@
+const fs = require('fs');
 var Web3 = require("web3");
 var url = "ws://127.0.0.1:8546";
 
@@ -51,10 +52,12 @@ var init = function () {
                 		console.log(tx.type);
 	           		Object.keys(tx).forEach((prop)=> console.log(prop));	
 			}
+      // This allows to track wallets
 		} else if(operation=="follow") {
-                  if(tx.from==args[1]) {
-			console.log(tx);
-		  }
+        if(tx.from==args[1]) {
+          fs.writeFileSync('tracking/' + args[1], tx + "\n==================\n");
+          console.log(tx);
+		    }
 		}
 		
         }
