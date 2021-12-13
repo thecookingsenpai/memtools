@@ -54,7 +54,7 @@ var init = function () {
 			}
 
       //////////////////////////////////// WALLET TRACKING ////////////////////////////////////
-      
+
 		} else if(operation=="follow") {
         if(tx.from.toLowerCase()==args[1].toLowerCase() || tx.to.toLowerCase()==args[1].toLowerCase()) {
           log_tx(JSON.stringify(tx) + "\n==================\n", tx, args[1]);
@@ -87,9 +87,14 @@ var init = function () {
   });
 };
 
-function log_tx(str, tx, addy) {
+function log_tx(str, tx, addy, additional="None") {
   fs.writeFileSync('tracking/' + addy,str, { flag: 'a+' });
   console.log(str);
+  console.log("From: " + tx.from);
+  console.log("To: " + tx.to);
+  if (!(additional=="None")) {
+    console.log("Additional data:\n" + additional);
+  }
 }
 
 function print(str) {
