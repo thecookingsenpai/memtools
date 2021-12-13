@@ -55,7 +55,7 @@ var init = function () {
       // This allows to track wallets
 		} else if(operation=="follow") {
         if(tx.from.toLowerCase()==args[1].toLowerCase() || tx.to.toLowerCase()==args[1].toLowerCase()) {
-          fs.writeFileSync('tracking/' + args[1], tx + "\n==================\n");
+          fs.writeFileSync('tracking/' + args[1], tx.toString() + "\n==================\n", { flag: 'a+' });
           console.log(tx);
 		    }
 		}
