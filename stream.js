@@ -68,6 +68,10 @@ var init = function () {
           else if (data.includes("0x18cbafe5")) {
             log_tx("swapExactTokensForEth", tx, args[1]);
           }
+
+          else if (data.includes("0x791ac947")) {
+            log_tx("swapExactTokensForETHSupportingFeeOnTransferTokens");
+          }
           
           // fallback
           else {
