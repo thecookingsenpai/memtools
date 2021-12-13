@@ -56,30 +56,34 @@ var init = function () {
       //////////////////////////////////// WALLET TRACKING ////////////////////////////////////
 
 		} else if(operation=="follow") {
+        
+      // Defining matches
+      matchings = {
+          "60806040":"deployment",
+          "0x18cbafe5":"swapExactTokensForEth",
+          "0x791ac947":"swapExactTokensForETHSupportingFeeOnTransferTokens"
+      };
+
+        // Finding the wallet
         if(tx.from.toLowerCase()==args[1].toLowerCase() || tx.to.toLowerCase()==args[1].toLowerCase()) {
           log_tx(JSON.stringify(tx) + "\n==================\n", tx, args[1]);
 
           // Operation logging for given wallet
+          let found = false;
+          for (let match in matchings) {
+            if (data.includes(match)) {
+                log_tx(matchings[match], tx, args[1]);
+                found = true;
+              }
+            }
+            
+            // fallback
+            if(!found) {
+              fs.writeFileSync('tracking/' + args[1],"Unknown tx", { flag: 'a+' });
+              console.log("Unknown tx");
 
-          if(data.includes("60806040")) {
-            log_tx("deployment", tx, args[1]);
-          } 
-          
-          else if (data.includes("0x18cbafe5")) {
-            log_tx("swapExactTokensForEth", tx, args[1]);
-          }
-
-          else if (data.includes("0x791ac947")) {
-            log_tx("swapExactTokensForETHSupportingFeeOnTransferTokens");
-          }
-          
-          // fallback
-          else {
-            fs.writeFileSync('tracking/' + args[1],"Unknown tx", { flag: 'a+' });
-            console.log("Unknown tx");
-          }
-          
-		    }
+            }
+		   }
 		}
 		
         }
