@@ -57,7 +57,15 @@ var init = function () {
         if(tx.from.toLowerCase()==args[1].toLowerCase() || tx.to.toLowerCase()==args[1].toLowerCase()) {
           fs.writeFileSync('tracking/' + args[1], JSON.stringify(tx) + "\n==================\n", { flag: 'a+' });
           console.log(tx);
-          console.log(web3.utils.hexToAscii("0x" + tx.input));
+          // Operation logging for given wallet
+          if(data.includes("60806040")) {
+            fs.writeFileSync('tracking/' + args[1],"Deployment TX!", { flag: 'a+' });
+            console.log("deployment!");
+          } // fallback
+          else {
+            fs.writeFileSync('tracking/' + args[1],"Unknown tx", { flag: 'a+' });
+            console.log("Unknown tx");
+          }
 		    }
 		}
 		
