@@ -1,6 +1,16 @@
 const fs = require('fs');
 var Web3 = require("web3");
+var Tx = require('ethereumjs-tx').Transaction;
+var Common = require('ethereumjs-common').default;
+
 var url = "ws://127.0.0.1:8546";
+
+// Defining matches
+matchings = {
+  "60806040":"deployment",
+  "0x18cbafe5":"swapExactTokensForEth",
+  "0x791ac947":"swapExactTokensForETHSupportingFeeOnTransferTokens"
+};
 
 var args = process.argv.slice(2);
 
@@ -36,9 +46,9 @@ var init = function () {
       try {
         let tx = await web3.eth.getTransaction(txHash);
 	if(tx) {
-		// =============================
-		// Operations based on argument
-		// =============================
+
+    //////////////////////////////////// FUNCTION TRACKING ////////////////////////////////////
+
 		let data = tx.input;
 
 		if(operation=="all"){
@@ -57,12 +67,6 @@ var init = function () {
 
 		} else if(operation=="follow") {
         
-      // Defining matches
-      matchings = {
-          "60806040":"deployment",
-          "0x18cbafe5":"swapExactTokensForEth",
-          "0x791ac947":"swapExactTokensForETHSupportingFeeOnTransferTokens"
-      };
 
         // Finding the wallet
         if(tx.from.toLowerCase()==args[1].toLowerCase() || tx.to.toLowerCase()==args[1].toLowerCase()) {
@@ -130,6 +134,66 @@ function hex2asc(pStr) {
         tempstr = tempstr + String.fromCharCode(parseInt(pStr.substr(b, 2), 16));
     }
     return tempstr;
+}
+
+// Helper script that buys token from a specified address specified on text file recv.json
+// The amount is specified with 'originalAmountToBuyWith' variable in the source
+// The JSON file should have an array with objects with 'address' field and 'privateKey' field.
+// Buys token for ${ethAmount} ETH from uniswap for address ${targetAccounts[targetIndex].address}
+// targetIndex is passed as an argument: process.argv.splice(2)[0]
+
+// SPECIFY_THE_AMOUNT_OF_BNB_YOU_WANT_TO_BUY_FOR_HERE
+var originalAmountToBuyWith = '0.1';
+var ethAmount = web3.utils.toWei(originalAmountToBuyWith, 'ether');
+
+var targetAccounts = JSON.parse(fs.readFileSync('recv.json', 'utf-8'));
+
+var targetIndex = Number(process.argv.splice(2)[0]);
+var targetAccount = targetAccounts[targetIndex];
+
+console.log(`Buying for ${originalAmountToBuyWith} ETH from uniswap for address ${targetAccount.address}`);
+
+var res = buyToken(targetAccounts[targetIndex], bnbAmount);
+console.log(res);
+
+async function buyToken(tknaddress, targetAccount, amount) {
+
+    var amountToBuyWith = web3.utils.toHex(amount);
+    var privateKey = Buffer.from(targetAccount.privateKey.slice(2), 'hex')  ;
+    var abiArray = JSON.parse(JSON.parse(fs.readFileSync('tkn.json','utf-8')));
+    var tokenAddress = tknaddress;
+    var WETHAddress = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
+
+    var amountOutMin = '0';
+    var UniswapRouterAddress = '0x7a250d5630b4cf539739df2c5dacb4c659f2488d'; // TODO
+
+    var routerAbi = JSON.parse(fs.readFileSync('uniswap-abi.json', 'utf-8'));
+    var contract = new web3.eth.Contract(routerAbi, UniswapRouterAddress, {from: targetAccount.address});
+    var data = contract.methods.swapExactETHForTokens(
+        web3.utils.toHex(amountOutMin),
+        [WETHAddress,
+         tokenAddress],
+        targetAccount.address,
+        web3.utils.toHex(Math.round(Date.now()/1000)+60*20),
+    );
+
+    var count = await web3.eth.getTransactionCount(targetAccount.address);
+    var rawTransaction = {
+        "from":targetAccount.address,
+        "gasPrice":web3.utils.toHex(5000000000), // TODO
+        "gasLimit":web3.utils.toHex(290000), // TODO
+        "to":pancakeSwapRouterAddress,
+        "value":web3.utils.toHex(amountToBuyWith),
+        "data":data.encodeABI(),
+        "nonce":web3.utils.toHex(count)
+    };
+
+    var transaction = new Tx(rawTransaction);
+    transaction.sign(privateKey);
+
+    var result = await web3.eth.sendSignedTransaction('0x' + transaction.serialize().toString('hex'));
+    console.log(result)
+    return result;
 }
 
 
