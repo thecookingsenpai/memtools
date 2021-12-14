@@ -9,7 +9,9 @@ var url = "ws://127.0.0.1:8546";
 matchings = {
   "60806040":"deployment",
   "0x18cbafe5":"swapExactTokensForEth",
-  "0x791ac947":"swapExactTokensForETHSupportingFeeOnTransferTokens"
+  "0x791ac947":"swapExactTokensForETHSupportingFeeOnTransferTokens",
+  "0x7ff36ab5":"swapExactETHForTokens",
+  "0xfb3bdb41":"swapETHForExactTokens"
 };
 
 var args = process.argv.slice(2);
@@ -83,9 +85,7 @@ var init = function () {
             
             // fallback
             if(!found) {
-              fs.writeFileSync('tracking/' + args[1],"Unknown tx", { flag: 'a+' });
-              console.log("Unknown tx");
-
+              log_tx("Unknown method", tx, args[1]);
             }
 		   }
 		}
@@ -107,6 +107,7 @@ function log_tx(str, tx, addy, additional="None") {
   if (!(additional=="None")) {
     console.log("Additional data:\n" + additional);
   }
+  console.log("\n++++++++++++++++++++++++++++++++\n\n");
 }
 
 function print(str) {
@@ -142,21 +143,21 @@ function hex2asc(pStr) {
 // Buys token for ${ethAmount} ETH from uniswap for address ${targetAccounts[targetIndex].address}
 // targetIndex is passed as an argument: process.argv.splice(2)[0]
 
-// SPECIFY_THE_AMOUNT_OF_BNB_YOU_WANT_TO_BUY_FOR_HERE
-var originalAmountToBuyWith = '0.1';
-var ethAmount = web3.utils.toWei(originalAmountToBuyWith, 'ether');
-
-var targetAccounts = JSON.parse(fs.readFileSync('recv.json', 'utf-8'));
-
-var targetIndex = Number(process.argv.splice(2)[0]);
-var targetAccount = targetAccounts[targetIndex];
-
-console.log(`Buying for ${originalAmountToBuyWith} ETH from uniswap for address ${targetAccount.address}`);
-
-var res = buyToken(targetAccounts[targetIndex], bnbAmount);
-console.log(res);
+// var res = buyToken(targetAccounts[targetIndex], bnbAmount);
+// console.log(res);
 
 async function buyToken(tknaddress, targetAccount, amount) {
+    // SPECIFY_THE_AMOUNT_OF_BNB_YOU_WANT_TO_BUY_FOR_HERE
+    var originalAmountToBuyWith = '0.1';
+    var ethAmount = web3.utils.toWei(originalAmountToBuyWith, 'ether');
+
+    var targetAccounts = JSON.parse(fs.readFileSync('recv.json', 'utf-8'));
+
+    var targetIndex = Number(process.argv.splice(2)[0]);
+    var targetAccount = targetAccounts[targetIndex];
+
+    console.log(`Buying for ${originalAmountToBuyWith} ETH from uniswap for address ${targetAccount.address}`);
+
 
     var amountToBuyWith = web3.utils.toHex(amount);
     var privateKey = Buffer.from(targetAccount.privateKey.slice(2), 'hex')  ;
